@@ -1,6 +1,11 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
+<!-- === PWA / ICONS / VIEWPORT (добавлено блоком) === -->
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./icons/icon-192.png">
+<meta name="theme-color" content="#0D1117"/>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>FiFo: Проводник в финансовое благополучие</title>
@@ -795,5 +800,142 @@ async function getGeminiAdvice() {
 });
 
 </script>
+<!-- === SW перерегистрация (одноразовая) + Perplexity + видимые ошибки Auth === -->
+<script>
+// Одноразовая жёсткая перерегистрация SW (чтобы прибить старый кэш)
+(function(){
+  if (!('serviceWorker' in navigator)) return;
+  const FLAG = 'sw_migrated_v3';
+  if (sessionStorage.getItem(FLAG)) return;
+  sessionStorage.setItem(FLAG, '1');
+  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()))
+  .finally(() => {
+    const ver = 'v3';
+    navigator.serviceWorker.register('./sw.js?v='+ver).catch(console.error);
+    setTimeout(()=>location.reload(), 1200); // один раз «жёстко» обновим
+  });
+})();
+</script>
+
+<script>
+// ===== Perplexity советник (подключён к твоему воркеру) =====
+const PPLX_ENDPOINT = 'https://sweet-mountain-1ef8.epiwh7.workers.dev';
+
+async function getGeminiAdvice(){ // оставляем твое имя обработчика
+  const adviceBox = document.getElementById('advice');
+  const adviceLoader = document.getElementById('advice-loader');
+  const btn = document.getElementById('btn-gemini-advice');
+
+  if (btn) btn.disabled = true;
+  if (adviceBox) adviceBox.innerHTML = '';
+  if (adviceLoader) adviceLoader.style.display = 'block';
+
+  try {
+    // Собираем краткую сводку за текущий месяц из твоей DB
+    const curYM = new Date().toISOString().slice(0,7);
+    const tx = (window.DB?.tx || []).filter(t => {
+      try { return new Date(t.date).toISOString().slice(0,7) === curYM; } catch {_=>false; return false;}
+    });
+    const income = tx.filter(t=>t.type==='income').reduce((a,t)=>a+(+t.amount||0),0);
+    const expense = tx.filter(t=>t.type==='expense').reduce((a,t)=>a+(+t.amount||0),0);
+
+    const byCat = new Map();
+    tx.filter(t=>t.type==='expense').forEach(t=>{
+      const k = t.cat || 'Прочее';
+      byCat.set(k, (byCat.get(k)||0) + (+t.amount||0));
+    });
+    const cats = Array.from(byCat.entries()).map(([k,v])=>`${k}: ${v.toLocaleString('ru-RU')} ₽`).join(', ') || 'Нет';
+
+    if (income===0 && expense===0) {
+      if (adviceBox) adviceBox.innerHTML = '<p style="color:#8B949E">Недостаточно данных за текущий месяц.</p>';
+      return;
+    }
+
+    const prompt = `Проанализируй мои финансы за текущий месяц и дай 3 коротких конкретных совета на русском.
+Доход: ${income.toLocaleString('ru-RU')} ₽, Расходы: ${expense.toLocaleString('ru-RU')} ₽. По категориям: ${cats}.
+Форматируй как маркированный список, без воды.`;
+
+    const res = await fetch(PPLX_ENDPOINT, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt })
+    });
+
+    const raw = await res.text();
+    let text = '';
+    try { const data = JSON.parse(raw); text = data.text || ''; }
+    catch { text = raw; }
+
+    if (!res.ok) {
+      if (adviceBox) adviceBox.innerHTML = `<p class="crit">Ошибка сервера (${res.status}).</p><pre style="white-space:pre-wrap">${(text||'').slice(0,800)}</pre>`;
+      return;
+    }
+    if (String(text).trim().startsWith('<')) {
+      if (adviceBox) adviceBox.innerHTML = `<p class="crit">Ответ не JSON (возможно HTML-ошибка воркера).</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`;
+      return;
+    }
+
+    if (adviceBox) adviceBox.innerHTML = text.split('\n').filter(Boolean)
+      .map(line=>`<p style="margin-bottom:8px;">${line.replace(/^[-*]\s?/, '')}</p>`).join('')
+      || '<p class="crit">Пустой ответ.</p>';
+
+  } catch(e) {
+    if (adviceBox) adviceBox.innerHTML = `<p class="crit">Ошибка: ${e.message}</p>`;
+  } finally {
+    if (btn) btn.disabled = false;
+    if (adviceLoader) adviceLoader.style.display = 'none';
+  }
+}
+
+// На всякий — переназначим обработчик кнопки
+document.getElementById('btn-gemini-advice')?.addEventListener('click', getGeminiAdvice);
+</script>
+
+<script type="module">
+// ===== Видимые ошибки Firebase Auth прямо под полями =====
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+
+const errBox = document.getElementById('auth-error');
+const $ = id => document.getElementById(id);
+const mapErr = (c,m)=>({
+  'auth/invalid-credential':'Неверный email или пароль.',
+  'auth/user-not-found':'Пользователь не найден.',
+  'auth/wrong-password':'Неверный пароль.',
+  'auth/too-many-requests':'Слишком много попыток. Подождите немного.',
+  'auth/network-request-failed':'Проблема с сетью или CORS.',
+  'auth/invalid-email':'Некорректный email.',
+  'auth/operation-not-allowed':'Метод входа отключён в Firebase.',
+  'auth/email-already-in-use':'Email уже зарегистрирован.',
+  'auth/weak-password':'Слабый пароль (мин. 6 символов).'
+}[c] || m || 'Неизвестная ошибка.');
+
+try {
+  // НЕ меняю твой firebaseConfig — он у тебя уже задан выше в файле
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  $('btn-login')?.addEventListener('click', async () => {
+    errBox.textContent = '';
+    try { await signInWithEmailAndPassword(auth, $('auth-email').value.trim(), $('auth-password').value.trim()); }
+    catch (e) { errBox.textContent = mapErr(e.code, e.message); }
+  });
+
+  $('btn-register')?.addEventListener('click', async () => {
+    errBox.textContent = '';
+    try { await createUserWithEmailAndPassword(auth, $('auth-email').value.trim(), $('auth-password').value.trim()); }
+    catch (e) { errBox.textContent = mapErr(e.code, e.message); }
+  });
+
+  onAuthStateChanged(auth, (user) => {
+    const overlay = document.getElementById('auth-overlay');
+    const appEl = document.querySelector('.app');
+    if (user) { overlay.style.display='none'; appEl.style.display='block'; }
+    else { overlay.style.display='flex'; appEl.style.display='none'; }
+  });
+} catch(e) {
+  if (errBox) errBox.textContent = 'Ошибка инициализации Firebase: ' + e.message;
+}
+</script>
+<!-- === конец готового блока === -->
 </body>
 </html>
