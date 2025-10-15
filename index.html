@@ -1,941 +1,613 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<!-- === PWA / ICONS / VIEWPORT (добавлено блоком) === -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./icons/icon-192.png">
-<meta name="theme-color" content="#0D1117"/>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>FiFo: Проводник в финансовое благополучие</title>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>FiFo: Проводник в финансовое благополучие</title>
 
-<!-- PWA Manifest and Theme Color -->
-<link rel="manifest" href="./manifest.webmanifest">
-<meta name="theme-color" content="#0D1117"/>
-<link rel="apple-touch-icon" href="./icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.webmanifest">
+  <meta name="theme-color" content="#0D1117"/>
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-<style>
-:root {
-    --bg-main: #0D1117;
-    --bg-card: #161B22;
-    --bg-input: #010409;
-    --border-color: #30363D;
-    --text-primary: #E6EDF3;
-    --text-secondary: #848D97;
-    --accent-blue: #2F81F7;
-    --accent-green: #238636;
-    --accent-red: #DA3633;
-    --accent-yellow: #DBAB09;
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-}
+  <!-- Fonts & Charts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 
-* { box-sizing: border-box; }
+  <style>
+    :root {
+      --bg-main:#0D1117; --bg-card:#161B22; --bg-input:#010409; --border:#30363D;
+      --text:#E6EDF3; --muted:#848D97;
+      --blue:#2F81F7; --green:#238636; --red:#DA3633; --yellow:#DBAB09;
+      --shadow:0 8px 24px rgba(0,0,0,.2);
+    }
+    * { box-sizing: border-box; }
+    html,body { height:100%; margin:0; }
+    body { font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif; background:var(--bg-main); color:var(--text); line-height:1.6; -webkit-font-smoothing:antialiased; }
+    .app { max-width:1280px; margin:0 auto; padding:24px; display:none; }
 
-html, body {
-    height: 100%;
-    margin: 0;
-    scroll-behavior: smooth;
-}
+    /* Auth overlay */
+    #auth-overlay { position:fixed; inset:0; background:var(--bg-main); display:flex; align-items:center; justify-content:center; z-index:1000; padding:24px; }
+    .auth-container { width:100%; max-width:400px; text-align:center; }
+    .auth-container h1 { margin:0 0 8px; font-size:28px; font-weight:700; }
+    .auth-container p { color:var(--muted); margin:0 0 24px; }
+    .auth-form { display:flex; flex-direction:column; gap:12px; }
+    .auth-form .row { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+    #auth-error { color:var(--red); min-height:18px; font-size:14px; }
 
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: var(--bg-main);
-    color: var(--text-primary);
-    line-height: 1.6;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
+    /* UI */
+    .card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:24px; box-shadow:var(--shadow); }
+    .grid { display:grid; gap:24px; }
+    .g2 { grid-template-columns:repeat(auto-fit,minmax(350px,1fr)); }
+    .g3 { grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
 
-.app {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 24px;
-    display: none; /* Hidden by default */
-}
+    .header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; padding-bottom:16px; border-bottom:1px solid var(--border); margin-bottom:16px; }
+    .header-title h1 { margin:0; font-size:28px; font-weight:700; }
+    .header-title p { margin:4px 0 0; color:var(--muted); font-size:14px; }
+    .header-actions { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
 
-#auth-overlay {
-    position: fixed;
-    inset: 0;
-    background: var(--bg-main);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    padding: 24px;
-}
+    input,select { background:var(--bg-input); border:1px solid var(--border); color:var(--text); padding:10px 14px; border-radius:8px; font-size:14px; transition:.2s; flex:1; }
+    input:focus,select:focus { outline:none; border-color:var(--blue); box-shadow:0 0 0 3px rgba(47,129,247,.3); }
+    .row { display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
 
-.auth-container {
-    width: 100%;
-    max-width: 400px;
-    text-align: center;
-}
+    .btn { background:#21262D; border:1px solid var(--border); color:var(--text); padding:10px 16px; border-radius:8px; font-size:14px; font-weight:500; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+    .btn:hover { background:#30363d; border-color:#8b949e; }
+    .btn-prim { background:var(--green); border:1px solid var(--green); color:#fff; font-weight:600; }
 
-.auth-container h1 {
-    font-size: 32px;
-    margin-bottom: 16px;
-}
+    .notice { padding:16px; border-radius:8px; border:1px solid var(--border); background:rgba(1,4,9,.5); }
+    .ok{color:#56d364;} .warn{color:var(--yellow);} .crit{color:var(--red);}
 
-.auth-container p {
-    color: var(--text-secondary);
-    margin-bottom: 32px;
-}
+    .kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:16px; }
+    .kpi-item { background:var(--bg-main); padding:12px; border-radius:8px; }
+    .kpi-item .label { font-size:12px; color:var(--muted); }
+    .kpi-item .value { font-size:22px; font-weight:700; }
 
-.auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
+    .table-container{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    table{ width:100%; border-collapse:collapse; font-size:14px; }
+    th,td{ padding:12px 16px; border-bottom:1px solid var(--border); text-align:left; }
+    th{ color:var(--muted); font-weight:600; }
+    td{ white-space:nowrap; }
 
-.auth-form input {
-    text-align: center;
-}
+    #loading-overlay{ position:fixed; inset:0; background:rgba(13,17,23,.95); display:none; align-items:center; justify-content:center; z-index:999; flex-direction:column; gap:16px; backdrop-filter:blur(5px); }
+    .loader{ border:4px solid var(--border); border-top:4px solid var(--blue); border-radius:50%; width:48px; height:48px; animation:spin 1s linear infinite; }
+    @keyframes spin{ to{ transform:rotate(360deg); } }
 
-.auth-form .row {
-    justify-content: center;
-}
+    /* Графики всегда видимы */
+    .chart-container{ position:relative; height:320px; width:100%; }
+    .chart-container canvas{ display:block !important; width:100% !important; height:100% !important; }
 
-#auth-error {
-    color: var(--accent-red);
-    min-height: 20px;
-    font-size: 14px;
-}
-
-.card {
-    background-color: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: var(--shadow);
-    transition: all 0.2s ease-in-out;
-}
-
-.card:hover {
-    border-color: #464c54;
-}
-
-.grid {
-    display: grid;
-    gap: 24px;
-}
-.g2 { grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); }
-.g3 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
-
-.header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 16px;
-    padding-bottom: 24px;
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: 24px;
-}
-
-.header-title h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin: 0;
-}
-.header-title p {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 4px 0 0;
-}
-
-.header-actions {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.title {
-    font-size: 20px;
-    font-weight: 600;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.subtitle {
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin-top: -4px;
-    margin-bottom: 16px;
-}
-
-
-.row {
-    display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-input, select {
-    background-color: var(--bg-input);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: 'Inter', sans-serif;
-    flex-grow: 1;
-    transition: all 0.2s ease-in-out;
-}
-
-input:focus, select:focus {
-    outline: none;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.3);
-}
-
-.btn {
-    background-color: #21262D;
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease-in-out;
-}
-
-.btn:hover {
-    background-color: #30363d;
-    border-color: #8b949e;
-}
-
-.btn-prim {
-    /* Base styles from .btn */
-    padding: 10px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-family: inherit;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: all 0.2s ease-in-out;
-    
-    /* Primary-specific styles */
-    background-color: var(--accent-green);
-    border: 1px solid var(--accent-green);
-    color: white;
-    font-weight: 600;
-}
-
-.btn-prim:hover {
-    background-color: #2ea043;
-    border-color: #2ea043;
-}
-
-.notice {
-    padding: 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: rgba(1, 4, 9, 0.5);
-}
-
-.kpi-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-}
-.kpi-item {
-    background-color: var(--bg-main);
-    padding: 12px;
-    border-radius: 8px;
-}
-.kpi-item .label {
-    font-size: 12px;
-    color: var(--text-secondary);
-    margin-bottom: 4px;
-}
-.kpi-item .value {
-    font-size: 22px;
-    font-weight: 700;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-}
-th, td {
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--border-color);
-    text-align: left;
-}
-th {
-    color: var(--text-secondary);
-    font-weight: 600;
-}
-td {
-    white-space: nowrap;
-}
-.table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-#loading-overlay {
-    position: fixed; inset: 0;
-    background: rgba(13, 17, 23, 0.95);
-    display: flex; align-items: center; justify-content: center;
-    z-index: 999;
-    flex-direction: column; gap: 16px;
-    backdrop-filter: blur(5px);
-}
-.loader {
-    border: 4px solid var(--border-color);
-    border-top: 4px solid var(--accent-blue);
-    border-radius: 50%;
-    width: 48px; height: 48px;
-    animation: spin 1s linear infinite;
-}
-@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-.ok { color: #56d364; }
-.warn { color: var(--accent-yellow); }
-.crit { color: var(--accent-red); }
-
-.file-input-label {
-    position: relative;
-    overflow: hidden;
-    display: inline-block;
-}
-.file-input-label input[type=file] {
-    position: absolute;
-    font-size: 100px;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
-}
-
-.chart-container {
-    position: relative;
-    height: 300px;
-    width: 100%;
-}
-
-
-/* --- Mobile-friendly tweaks (auto scale) --- */
-:root { --fs-h1: clamp(22px, 4.8vw, 30px); --fs-h2: clamp(16px, 3.8vw, 20px); --fs-text: clamp(13px, 3.4vw, 15px); }
-body { font-size: var(--fs-text); }
-.header-title h1 { font-size: var(--fs-h1); }
-.title { font-size: var(--fs-h2); }
-input, select, .btn, .btn-prim { font-size: var(--fs-text); }
-.chart-container { height: 300px; }
-@media (max-width: 480px) {
-  .header { flex-direction: column; align-items: stretch; gap: 8px; }
-  .header-actions { width: 100%; gap: 8px; }
-  .btn, .btn-prim, input, select { width: 100%; }
-  th:nth-child(5), td:nth-child(5) { display: none; }
-}
-</style>
+    /* Аккуратный адаптив без ломки сетки */
+    @media (max-width: 480px){
+      .app{ padding:16px; }
+      .header-actions{ width:100%; gap:8px; }
+      .header-actions .btn, .header-actions .btn-prim{ width:100%; }
+      .grid.g3, .grid.g2 { grid-template-columns:1fr; }
+      input,select,.btn,.btn-prim{ font-size:16px; }
+      table{ font-size:14px; }
+      th:nth-child(5), td:nth-child(5){ display:none; } /* скрыть длинный комментарий */
+    }
+  </style>
 </head>
 <body>
 
-<!-- =============================================================== -->
-<!-- ВАША КОНФИГУРАЦИЯ FIREBASE                                       -->
-<!-- Сюда нужно вставить firebaseConfig и appId из вашего проекта      -->
-<!-- =============================================================== -->
+<!-- FIREBASE CONFIG -->
 <script>
-    // ШАГ 1: ВСТАВЬТЕ СКОПИРОВАННЫЙ firebaseConfig НИЖЕ
-    const firebaseConfig = {
-        apiKey: "AIzaSyC6Xpy-5uBAb09twfptyqtPsYtGb6nTLcU",
-        authDomain: "fifo-75b02.firebaseapp.com",
-        projectId: "fifo-75b02",
-        storageBucket: "fifo-75b02.appspot.com",
-        messagingSenderId: "636680486355",
-        appId: "1:636680486355:web:b5dcac43646294ffe18326",
-        measurementId: "G-TT9E4MVQ3D"
-    };
-
-    // ШАГ 2: ВСТАВЬТЕ ВАШ APP ID (projectId) НИЖЕ
-    const appId = "fifo-75b02";
+  const firebaseConfig = {
+    apiKey: "AIzaSyC6Xpy-5uBAb09twfptyqtPsYtGb6nTLcU",
+    authDomain: "fifo-75b02.firebaseapp.com",
+    projectId: "fifo-75b02",
+    storageBucket: "fifo-75b02.appspot.com",
+    messagingSenderId: "636680486355",
+    appId: "1:636680486355:web:b5dcac43646294ffe18326",
+    measurementId: "G-TT9E4MVQ3D"
+  };
+  const appId = "fifo-75b02";
 </script>
-<!-- =============================================================== -->
-<!-- КОНЕЦ СЕКЦИИ КОНФИГУРАЦИИ                                      -->
-<!-- =============================================================== -->
 
+<!-- AUTH -->
 <div id="auth-overlay">
-    <div class="auth-container">
-        <h1>Добро пожаловать в FiFo</h1>
-        <p>проводник в финансовое благополучие</p>
-        <div class="auth-form">
-            <input type="email" id="auth-email" placeholder="Ваш Email" autocomplete="email">
-            <input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password">
-            <div id="auth-error"></div>
-            <div class="row">
-                <button id="btn-login" class="btn">Войти</button>
-                <button id="btn-register" class="btn-prim">Регистрация</button>
-            </div>
-        </div>
+  <div class="auth-container">
+    <h1>Добро пожаловать в FiFo</h1>
+    <p>проводник в финансовое благополучие</p>
+    <div class="auth-form">
+      <input type="email" id="auth-email" placeholder="Ваш Email" autocomplete="email">
+      <input type="password" id="auth-password" placeholder="Пароль" autocomplete="current-password">
+      <div id="auth-error"></div>
+      <div class="row">
+        <button id="btn-login" class="btn">Войти</button>
+        <button id="btn-register" class="btn-prim">Регистрация</button>
+      </div>
     </div>
+  </div>
 </div>
 
-<div id="loading-overlay" style="display: none;">
+<!-- LOADER -->
+<div id="loading-overlay">
   <div class="loader"></div>
-  <p style="color: var(--text-secondary);">Загрузка данных...</p>
+  <p style="color:var(--muted)">Загрузка данных…</p>
 </div>
 
+<!-- APP -->
 <div class="app">
   <header class="header">
-      <div class="header-title">
-          <h1>FiFo</h1>
-          <p>Ваш проводник в финансовое благополучие</p>
+    <div class="header-title">
+      <h1>FiFo</h1>
+      <p>Ваш проводник в финансовое благополучие</p>
+    </div>
+    <div class="header-actions">
+      <div style="text-align:right;">
+        <div id="user-email" style="font-size:14px;font-weight:500;"></div>
+        <select id="budget-switcher" class="btn" style="max-width:200px;margin-top:4px;" title="Переключиться между бюджетами"></select>
       </div>
-      <div class="header-actions">
-          <div style="text-align: right;">
-            <div id="user-email" style="font-size: 14px; font-weight: 500;"></div>
-            <select id="budget-switcher" class="btn" style="max-width: 200px; margin-top: 4px;" title="Переключиться между бюджетами"></select>
-          </div>
-          <button id="btn-logout" class="btn" title="Выйти из аккаунта">Выйти</button>
-      </div>
+      <button id="btn-logout" class="btn" title="Выйти из аккаунта">Выйти</button>
+    </div>
   </header>
 
-  <main class="grid" style="gap: 24px;">
+  <main class="grid" style="gap:24px">
     <div class="card">
-        <div class="title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            Семейный режим
-        </div>
-        <p class="subtitle">Поделитесь ID текущего бюджета с семьей для совместного ведения финансов.
-            <span id="sync-status" style="margin-left: 8px; font-weight: 500;"></span>
-        </p>
-        <div class="row">
-            <input id="current-budget-id" type="text" readonly title="ID текущего активного бюджета. Скопируйте и отправьте его членам семьи.">
-            <button id="btn-copy-id" class="btn" title="Скопировать ID в буфер обмена">Копировать ID</button>
-        </div>
-        <div class="row" style="margin-top: 12px;">
-            <input id="join-budget-id" type="text" placeholder="Вставьте ID для подключения к бюджету" title="Если член семьи прислал вам ID, вставьте его сюда, чтобы подключиться.">
-            <button id="btn-join-budget" class="btn-prim" title="Подключиться к бюджету по ID">Присоединиться</button>
-        </div>
-    </div>
-    
-     <div class="card">
-        <div class="title">Сводка за месяц</div>
-        <p class="subtitle">Ключевые показатели ваших финансов за текущий календарный месяц.</p>
-        <div class="kpi-grid">
-            <div class="kpi-item">
-                <div class="label">Доходы</div>
-                <div class="value ok" id="kpi-income">—</div>
-            </div>
-            <div class="kpi-item">
-                <div class="label">Расходы</div>
-                <div class="value warn" id="kpi-expense">—</div>
-            </div>
-            <div class="kpi-item">
-                <div class="label">Баланс</div>
-                <div class="value" id="kpi-balance">—</div>
-            </div>
-        </div>
-        <div id="kpi-meta" style="font-size: 12px; color: var(--text-secondary); margin-top: 16px; text-align: center;"></div>
-    </div>
-    
-    <div class="card">
-        <div class="title">План на месяц</div>
-        <p class="subtitle">Установите цели, чтобы отслеживать свой прогресс и не выходить за рамки бюджета.</p>
-        <div class="row">
-            <input id="plan-income" type="number" step="100" placeholder="План доходов" title="Какую сумму вы планируете получить в этом месяце?"/>
-            <input id="plan-expense" type="number" step="100" placeholder="Целевые расходы" title="Больше какой суммы вы стараетесь не тратить?"/>
-        </div>
-         <div class="row" style="margin-top: 12px;">
-            <input id="plan-savings" type="number" step="100" placeholder="Цель по сбережениям" title="Какую сумму вы хотите сберечь в этом месяце?"/>
-            <select id="plan-weekly" title="Сколько недель в текущем месяце для расчета недельных лимитов?"><option value="4">4 недели</option><option value="5">5 недель</option></select>
-        </div>
-        <button id="btn-save-plan" class="btn-prim" style="width: 100%; margin-top: 12px;" title="Сохранить или обновить ваш финансовый план">Сохранить план</button>
-    </div>
-
-    <div class="card" style="grid-column: 1 / -1;">
-        <div class="title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.46 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-            Риски и алерты
-        </div>
-         <p class="subtitle">Система автоматически анализирует ваши данные и предупреждает о потенциальных проблемах.</p>
-        <div id="risk-panel" class="notice">Внесите данные, чтобы увидеть оценку.</div>
-    </div>
-    
-    <div class="card" style="grid-column: 1 / -1;">
-        <div class="title">Добавление транзакции</div>
-        <p class="subtitle">Зафиксируйте здесь все ваши доходы и расходы для точного учета.</p>
-        <div class="grid g3">
-            <input id="tx-date" type="date" title="Дата операции"/>
-            <select id="tx-type" title="Тип операции: Доход или Расход"><option value="expense">Расход</option><option value="income">Доход</option></select>
-            <input id="tx-cat" placeholder="Категория" list="cat-list" title="Например: Продукты, Транспорт, Зарплата"/>
-            <input id="tx-amt" type="number" step="10" placeholder="Сумма, ₽" title="Сумма операции в рублях"/>
-            <input id="tx-note" placeholder="Комментарий" style="grid-column: span 2;" title="Любая дополнительная информация: магазин, назначение перевода и т.д."/>
-        </div>
-        <div class="row" style="margin-top: 16px; justify-content: flex-end;">
-            <button id="btn-autocat" class="btn" title="Автоматически определить категории для транзакций без категории">Автокатегоризовать</button>
-            <button id="btn-add" class="btn-prim" title="Сохранить транзакцию">Добавить транзакцию</button>
-        </div>
-        <datalist id="cat-list"></datalist>
-    </div>
-
-    <div class="card" style="grid-column: 1 / -1;">
-        <div class="title">Транзакции</div>
-         <p class="subtitle">Полный список всех ваших финансовых операций. Самые свежие — сверху.</p>
-        <div class="table-container">
-            <table id="tx-table">
-                <thead><tr><th>Дата</th><th>Тип</th><th>Категория</th><th style="text-align: right;">Сумма, ₽</th><th>Комментарий</th><th></th></tr></thead>
-                <tbody></tbody>
-            </table>
-        </div>
-    </div>
-    
-    <div class="card">
-        <div class="title">Структура расходов</div>
-        <p class="subtitle">На что уходят ваши деньги в этом месяце?</p>
-        <div class="chart-container">
-            <canvas id="pie"></canvas>
-        </div>
+      <div class="title">Семейный режим</div>
+      <p class="subtitle" style="color:var(--muted)">Поделитесь ID текущего бюджета с семьей для совместного ведения. <span id="sync-status" style="margin-left:8px;font-weight:500;"></span></p>
+      <div class="row">
+        <input id="current-budget-id" type="text" readonly title="ID текущего активного бюджета">
+        <button id="btn-copy-id" class="btn">Копировать ID</button>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <input id="join-budget-id" type="text" placeholder="Вставьте ID для подключения">
+        <button id="btn-join-budget" class="btn-prim">Присоединиться</button>
+      </div>
     </div>
 
     <div class="card">
-        <div class="title">Баланс по месяцам</div>
-        <p class="subtitle">Динамика ваших доходов и расходов за последний год.</p>
-        <div class="chart-container">
-            <canvas id="bar"></canvas>
-        </div>
+      <div class="title">Сводка за месяц</div>
+      <p class="subtitle" style="color:var(--muted)">Ключевые показатели за текущий месяц.</p>
+      <div class="kpi-grid">
+        <div class="kpi-item"><div class="label">Доходы</div><div class="value ok" id="kpi-income">—</div></div>
+        <div class="kpi-item"><div class="label">Расходы</div><div class="value warn" id="kpi-expense">—</div></div>
+        <div class="kpi-item"><div class="label">Баланс</div><div class="value" id="kpi-balance">—</div></div>
+      </div>
+      <div id="kpi-meta" style="font-size:12px;color:var(--muted);margin-top:16px;text-align:center;"></div>
     </div>
 
-    <div class="card" style="grid-column: 1 / -1;">
-        <div class="title">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
-            Рекомендации помощника
-        </div>
-        <p class="subtitle">Получите персональные советы по оптимизации бюджета от нашего умного помощника.</p>
-        <div id="advice" class="notice">Советы появятся автоматически. Нажмите на кнопку, чтобы получить персональные рекомендации от ИИ.</div>
-        <div id="advice-loader" style="display: none; margin-top: 16px; text-align: center;">
-            <div class="loader" style="margin: 0 auto;"></div>
-            <p style="color: var(--text-secondary); margin-top: 8px;">Анализируем ваши финансы...</p>
-        </div>
-        <button id="btn-gemini-advice" class="btn-prim" style="width: 100%; margin-top: 16px;" title="Отправить анонимные данные за месяц для получения совета от ИИ">
-            ✨ Совет от Perplexity
-        </button>
+    <div class="card">
+      <div class="title">План на месяц</div>
+      <p class="subtitle" style="color:var(--muted)">Задайте цели, чтобы держать курс.</p>
+      <div class="row">
+        <input id="plan-income" type="number" step="100" placeholder="План доходов"/>
+        <input id="plan-expense" type="number" step="100" placeholder="Целевые расходы"/>
+      </div>
+      <div class="row" style="margin-top:12px;">
+        <input id="plan-savings" type="number" step="100" placeholder="Цель по сбережениям"/>
+        <select id="plan-weekly"><option value="4">4 недели</option><option value="5">5 недель</option></select>
+      </div>
+      <button id="btn-save-plan" class="btn-prim" style="width:100%;margin-top:12px;">Сохранить план</button>
+    </div>
+
+    <div class="card" style="grid-column:1/-1;">
+      <div class="title">Риски и алерты</div>
+      <p class="subtitle" style="color:var(--muted)">Автоматический анализ ваших данных.</p>
+      <div id="risk-panel" class="notice">Внесите данные, чтобы увидеть оценку.</div>
+    </div>
+
+    <div class="card" style="grid-column:1/-1;">
+      <div class="title">Добавление транзакции</div>
+      <p class="subtitle" style="color:var(--muted)">Фиксируйте доходы/расходы.</p>
+      <div class="grid g3">
+        <input id="tx-date" type="date" title="Дата"/>
+        <select id="tx-type" title="Тип"><option value="expense">Расход</option><option value="income">Доход</option></select>
+        <input id="tx-cat" placeholder="Категория" list="cat-list"/>
+        <input id="tx-amt" type="number" step="10" placeholder="Сумма, ₽"/>
+        <input id="tx-note" placeholder="Комментарий" style="grid-column:span 2;"/>
+      </div>
+      <div class="row" style="margin-top:16px; justify-content:flex-end;">
+        <button id="btn-autocat" class="btn">Автокатегоризовать</button>
+        <button id="btn-add" class="btn-prim">Добавить транзакцию</button>
+      </div>
+      <datalist id="cat-list"></datalist>
+    </div>
+
+    <div class="card">
+      <div class="title">Структура расходов</div>
+      <p class="subtitle" style="color:var(--muted)">На что уходят деньги?</p>
+      <div class="chart-container"><canvas id="pie"></canvas></div>
+    </div>
+
+    <div class="card">
+      <div class="title">Баланс по месяцам</div>
+      <p class="subtitle" style="color:var(--muted)">Динамика за год.</p>
+      <div class="chart-container"><canvas id="bar"></canvas></div>
+    </div>
+
+    <div class="card" style="grid-column:1/-1;">
+      <div class="title">Рекомендации помощника</div>
+      <p class="subtitle" style="color:var(--muted)">Нажмите, чтобы получить персональные советы.</p>
+      <div id="advice" class="notice">Советы появятся здесь.</div>
+      <div id="advice-loader" style="display:none;margin-top:16px;text-align:center;">
+        <div class="loader" style="margin:0 auto;"></div>
+        <p style="color:var(--muted);margin-top:8px;">Анализируем ваши финансы…</p>
+      </div>
+      <button id="btn-gemini-advice" class="btn-prim" style="width:100%;margin-top:16px;">✨ Совет от Perplexity</button>
     </div>
   </main>
 </div>
 
+<!-- SW: простая регистрация с версией -->
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js?v=4').catch(console.error);
+  }
+</script>
+
+<!-- App logic -->
 <script type="module">
-// Firebase Imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-import { getFirestore, doc, onSnapshot, setDoc, getDoc, updateDoc, arrayUnion, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+  import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+  import { getFirestore, doc, onSnapshot, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-// ==== CONFIG & STATE ====
-const template={plan:{income:100000,expense:80000,savings:20000,weeks:4}, tx:[], debts:[], goals:[], cats:{}, recur:[]};
-let DB = structuredClone(template);
-let db, auth, userId, unsubscribe, activeBudgetId;
-let userData = { personalBudgetId: null, sharedBudgets: [] };
+  // --- State ---
+  const template = { plan:{income:100000,expense:80000,savings:20000,weeks:4}, tx:[], debts:[], goals:[], cats:{}, recur:[] };
+  let DB = structuredClone(template);
+  let db, auth, userId, unsubscribe, activeBudgetId;
+  let userData = { personalBudgetId:null, sharedBudgets:[] };
 
-// ==== DOM ELEMENTS ====
-let el = {};
+  // --- DOM ---
+  const $ = (id)=>document.getElementById(id);
+  const el = {
+    app: document.querySelector('.app'),
+    authOverlay: $('auth-overlay'),
+    loading: $('loading-overlay'),
+    authEmail: $('auth-email'),
+    authPass: $('auth-password'),
+    authErr: $('auth-error'),
+    btnLogin: $('btn-login'),
+    btnRegister: $('btn-register'),
+    userEmail: $('user-email'),
+    budgetSwitcher: $('budget-switcher'),
+    btnLogout: $('btn-logout'),
+    syncStatus: $('sync-status'),
+    currentBudgetId: $('current-budget-id'),
+    btnCopyId: $('btn-copy-id'),
+    joinBudgetId: $('join-budget-id'),
+    btnJoinBudget: $('btn-join-budget'),
+    planIncome: $('plan-income'),
+    planExpense: $('plan-expense'),
+    planSavings: $('plan-savings'),
+    planWeeks: $('plan-weekly'),
+    btnSavePlan: $('btn-save-plan'),
+    kpiI: $('kpi-income'),
+    kpiE: $('kpi-expense'),
+    kpiB: $('kpi-balance'),
+    kpiMeta: $('kpi-meta'),
+    risk: $('risk-panel'),
+    txDate: $('tx-date'),
+    txType: $('tx-type'),
+    txCat: $('tx-cat'),
+    txAmt: $('tx-amt'),
+    txNote: $('tx-note'),
+    btnAdd: $('btn-add'),
+    btnAutocat: $('btn-autocat'),
+    txTableBody: document.querySelector('#tx-table tbody'),
+    pie: $('pie'),
+    bar: $('bar'),
+    advice: $('advice'),
+    adviceLoader: $('advice-loader'),
+    btnAdvice: $('btn-gemini-advice'),
+    catList: $('cat-list')
+  };
 
-function populateDomElements() {
-    el.app = document.querySelector('.app');
-    el.authOverlay = document.getElementById('auth-overlay');
-    el.loadingOverlay = document.getElementById('loading-overlay');
-    el.authEmail = document.getElementById('auth-email');
-    el.authPassword = document.getElementById('auth-password');
-    el.authError = document.getElementById('auth-error');
-    el.btnLogin = document.getElementById('btn-login');
-    el.btnRegister = document.getElementById('btn-register');
-    el.userEmail = document.getElementById('user-email');
-    el.budgetSwitcher = document.getElementById('budget-switcher');
-    el.btnLogout = document.getElementById('btn-logout');
-    el.syncStatus = document.getElementById('sync-status');
-    el.currentBudgetId = document.getElementById('current-budget-id');
-    el.btnCopyId = document.getElementById('btn-copy-id');
-    el.joinBudgetId = document.getElementById('join-budget-id');
-    el.btnJoinBudget = document.getElementById('btn-join-budget');
-    el.planIncome = document.getElementById('plan-income');
-    el.planExpense = document.getElementById('plan-expense');
-    el.planSavings = document.getElementById('plan-savings');
-    el.planWeeks = document.getElementById('plan-weekly');
-    el.btnSavePlan = document.getElementById('btn-save-plan');
-    el.kpiI = document.getElementById('kpi-income');
-    el.kpiE = document.getElementById('kpi-expense');
-    el.kpiB = document.getElementById('kpi-balance');
-    el.kpiMeta = document.getElementById('kpi-meta');
-    el.risk = document.getElementById('risk-panel');
-    el.txDate = document.getElementById('tx-date');
-    el.txType = document.getElementById('tx-type');
-    el.txCat = document.getElementById('tx-cat');
-    el.txAmt = document.getElementById('tx-amt');
-    el.txNote = document.getElementById('tx-note');
-    el.btnAdd = document.getElementById('btn-add');
-    el.btnAutocat = document.getElementById('btn-autocat');
-    el.txTableBody = document.querySelector('#tx-table tbody');
-    el.pie = document.getElementById('pie');
-    el.bar = document.getElementById('bar');
-    el.advice = document.getElementById('advice');
-    el.btnGeminiAdvice = document.getElementById('btn-gemini-advice');
-    el.adviceLoader = document.getElementById('advice-loader');
-    el.catList = document.getElementById('cat-list');
-}
+  // --- Utils ---
+  const fmt = n => (n===null||n===undefined||isNaN(n))?'—':(+n).toLocaleString('ru-RU');
+  const todayISO = ()=>{ const d=new Date(); d.setMinutes(d.getMinutes()-d.getTimezoneOffset()); return d.toISOString().slice(0,10); };
+  const ym = d => { const t=new Date(d); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`; };
+  const sum = a => a.reduce((x,y)=>x+(+y||0),0);
+  const groupBy = (a,fn)=>{const m=new Map(); for(const it of a){const k=fn(it); if(!m.has(k)) m.set(k,[]); m.get(k).push(it);} return m;};
+  const uniq = a => Array.from(new Set(a));
 
-
-// ==== FIREBASE & AUTH ====
-async function initializeFirebase() {
-    try {
-        if (!firebaseConfig || !appId || firebaseConfig.apiKey === "AIzaSy...YOUR_API_KEY") {
-            el.authError.textContent = "Ошибка: Конфигурация Firebase не найдена. Укажите ее в HTML-файле.";
-            return;
-        }
-        const app = initializeApp(firebaseConfig);
-        db = getFirestore(app);
-        auth = getAuth(app);
-        setLogLevel('error'); 
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                el.authOverlay.style.display = 'none';
-                el.loadingOverlay.style.display = 'flex';
-                el.userEmail.textContent = user.email;
-                await fetchUserData();
-                el.loadingOverlay.style.display = 'none';
-                el.app.style.display = 'block';
-            } else {
-                userId = null;
-                el.app.style.display = 'none';
-                el.authOverlay.style.display = 'flex';
-                el.loadingOverlay.style.display = 'none';
-                if(unsubscribe) unsubscribe();
-            }
-        });
-    } catch (error) {
-        console.error("Firebase initialization failed:", error);
-        el.authError.textContent = "Ошибка инициализации. Попробуйте позже.";
+  // --- Charts ---
+  let pieRef, barRef;
+  function ensureCharts(){
+    if (el.pie && !pieRef) {
+      pieRef = new Chart(el.pie, { type:'doughnut', data:{labels:[],datasets:[{data:[], backgroundColor:['#2F81F7','#238636','#DA3633','#DBAB09','#6e7681','#58a6ff','#7ee787'], borderWidth:0}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#848D97'}}}}});
     }
-}
+    if (el.bar && !barRef) {
+      barRef = new Chart(el.bar, { type:'bar', data:{labels:[],datasets:[{label:'Баланс',data:[]}]}, options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#848D97'}}},scales:{x:{ticks:{color:'#848D97'},grid:{color:'#30363D'}},y:{beginAtZero:true,ticks:{color:'#848D97'},grid:{color:'#30363D'}}}}});
+    }
+  }
+  function renderCharts(){
+    ensureCharts();
+    const cur = ym(new Date());
+    const byCat = groupBy(DB.tx.filter(t=>t.type==='expense' && ym(t.date)===cur), t=>t.cat||'—');
+    const labels = Array.from(byCat.keys());
+    const vals = labels.map(k=> sum(byCat.get(k).map(t=>+t.amount||0)));
+    if (pieRef){ pieRef.data.labels = labels; pieRef.data.datasets[0].data = vals; pieRef.update(); }
 
-async function fetchUserData() {
-    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
-    const docSnap = await getDoc(userDocRef);
+    const byMon = groupBy(DB.tx, t=>ym(t.date));
+    const months = Array.from(byMon.keys()).sort().slice(-12);
+    const balances = months.map(m=>{ const a=byMon.get(m); const I=sum(a.filter(t=>t.type==='income').map(t=>+t.amount||0)); const E=sum(a.filter(t=>t.type==='expense').map(t=>+t.amount||0)); return I-E; });
+    if (barRef){ barRef.data.labels = months; barRef.data.datasets[0].data = balances; barRef.update(); }
+  }
 
-    if (docSnap.exists()) {
-        userData = docSnap.data();
-        activeBudgetId = userData.personalBudgetId;
-        populateBudgetSwitcher();
-        await setupRealtimeListener();
+  // --- Renderers ---
+  function renderTx(){
+    const rows = [...DB.tx].sort((a,b)=> new Date(b.date)-new Date(a.date));
+    el.txTableBody.innerHTML = rows.map(t=>`
+      <tr>
+        <td>${t.date||''}</td>
+        <td><span class="${t.type==='income'?'ok':'warn'}">${t.type==='income'?'Доход':'Расход'}</span></td>
+        <td>${t.cat||''}</td>
+        <td style="text-align:right;">${fmt(t.amount)}</td>
+        <td>${(t.note||'').replace(/</g,'&lt;')}</td>
+        <td style="text-align:center;"><button class="btn" data-id="${t.id||''}" data-action="del" style="padding:4px 8px;font-size:12px;">✕</button></td>
+      </tr>
+    `).join('');
+  }
+  function refreshCatList(){
+    const cats = uniq((DB.tx||[]).map(t=>t.cat).filter(Boolean).concat(Object.keys(DB.cats||{})));
+    el.catList.innerHTML = cats.sort().map(c=>`<option value="${c}"></option>`).join('');
+  }
+  function renderRisks(inc,exp,bal){
+    const notes=[];
+    if (inc<=0) notes.push({lvl:'crit', text:'В месяце нет доходов.'});
+    if (DB.plan.expense && exp>DB.plan.expense) notes.push({lvl:'warn', text:`Расходы выше плана на ${fmt(exp-DB.plan.expense)} ₽.`});
+    if (bal<0) notes.push({lvl:'crit', text:'Отрицательный баланс — урежьте переменные траты.'});
+    const cur=ym(new Date());
+    const exps=DB.tx.filter(t=>t.type==='expense' && ym(t.date)===cur);
+    const total=sum(exps.map(t=>+t.amount||0))||1;
+    const opaque=sum(exps.filter(t=>['Снятие наличных','Переводы','Переводы СБП'].includes(t.cat)).map(t=>+t.amount||0))/total;
+    if (opaque>0.25) notes.push({lvl:'warn', text:`Наличные/переводы ${(opaque*100).toFixed(0)}% — цель <15%.`});
+    el.risk.innerHTML = notes.length ? notes.map(n=>`<div class="${n.lvl==='crit'?'crit':'warn'}">• ${n.text}</div>`).join('<br>') : '<span class="ok">Ок: следуйте плану.</span>';
+  }
+  function renderAdvice(inc,exp,bal){
+    const adv=[];
+    if (bal<0) adv.push({t:`Баланс отрицательный (${fmt(bal)} ₽).`, d:`Сократите переменные траты: «Развлечения», «Кафе/Доставка».`});
+    if (DB.plan.savings && bal<DB.plan.savings) adv.push({t:`Сбережения ниже цели.`, d:`Увеличьте доход/снизьте подписки и доставку.`});
+    el.advice.innerHTML = adv.length ? adv.map(x=>`<p><b>${x.t}</b><br><span style="font-size:12px;color:var(--muted)">${x.d}</span></p>`).join('') : '<p style="color:var(--muted)">Советы появятся после ввода данных.</p>';
+  }
+  function recalc(){
+    const cur = ym(new Date());
+    const inMonth = DB.tx.filter(t=>ym(t.date)===cur);
+    const inc = sum(inMonth.filter(t=>t.type==='income').map(t=>+t.amount||0));
+    const exp = sum(inMonth.filter(t=>t.type==='expense').map(t=>+t.amount||0));
+    const bal = inc-exp;
+
+    el.kpiI.textContent = fmt(inc);
+    el.kpiE.textContent = fmt(exp);
+    el.kpiB.textContent = fmt(bal);
+    el.kpiMeta.textContent = `План: доход ${fmt(DB.plan.income)} · расход ${fmt(DB.plan.expense)} · сбережения ${fmt(DB.plan.savings)}`;
+
+    el.planIncome.value = DB.plan.income||'';
+    el.planExpense.value = DB.plan.expense||'';
+    el.planSavings.value = DB.plan.savings||'';
+    el.planWeeks.value = DB.plan.weeks||4;
+
+    renderRisks(inc,exp,bal);
+    renderTx();
+    renderCharts();
+    renderAdvice(inc,exp,bal);
+    refreshCatList();
+  }
+
+  // --- Firebase ---
+  const app = initializeApp(firebaseConfig);
+  db = getFirestore(app);
+  auth = getAuth(app);
+
+  // auth buttons
+  const mapErr = (c,m)=>({
+    'auth/invalid-credential':'Неверный email или пароль.',
+    'auth/user-not-found':'Пользователь не найден.',
+    'auth/wrong-password':'Неверный пароль.',
+    'auth/too-many-requests':'Слишком много попыток. Подождите немного.',
+    'auth/network-request-failed':'Проблема с сетью или CORS.',
+    'auth/invalid-email':'Некорректный email.',
+    'auth/operation-not-allowed':'Метод входа отключён в Firebase.',
+    'auth/email-already-in-use':'Email уже зарегистрирован.',
+    'auth/weak-password':'Слабый пароль (мин. 6 символов).'
+  }[c] || m || 'Неизвестная ошибка.');
+
+  el.btnLogin?.addEventListener('click', async ()=>{
+    el.authErr.textContent=''; 
+    try{ await signInWithEmailAndPassword(auth, el.authEmail.value.trim(), el.authPass.value.trim()); }
+    catch(e){ el.authErr.textContent = mapErr(e.code, e.message); }
+  });
+  el.btnRegister?.addEventListener('click', async ()=>{
+    el.authErr.textContent=''; 
+    try{ await createUserWithEmailAndPassword(auth, el.authEmail.value.trim(), el.authPass.value.trim()); }
+    catch(e){ el.authErr.textContent = mapErr(e.code, e.message); }
+  });
+  el.btnLogout?.addEventListener('click', ()=>signOut(auth));
+
+  onAuthStateChanged(auth, async (user)=>{
+    if (user){
+      userId = user.uid;
+      el.userEmail.textContent = user.email;
+      el.authOverlay.style.display='none';
+      el.loading.style.display='flex';
+      await fetchUserData();
+      el.loading.style.display='none';
+      el.app.style.display='block';
+      // дата по умолчанию
+      if (el.txDate && !el.txDate.value) el.txDate.value = todayISO();
     } else {
-        console.log("No user data found, creating for new user.");
-        // This case handles registration where the user document might not exist yet.
+      userId = null;
+      el.app.style.display='none';
+      el.authOverlay.style.display='flex';
+      el.loading.style.display='none';
+      if (unsubscribe) unsubscribe();
     }
-}
+  });
 
-function populateBudgetSwitcher() {
+  async function fetchUserData(){
+    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}`);
+    const snap = await getDoc(userDocRef);
+    if (snap.exists()){
+      userData = snap.data();
+      activeBudgetId = userData.personalBudgetId;
+    } else {
+      userData = { personalBudgetId: `${userId}-default`, sharedBudgets:[] };
+      activeBudgetId = userData.personalBudgetId;
+      await setDoc(userDocRef, userData, {merge:true});
+    }
+    populateBudgetSwitcher();
+    await setupRealtimeListener();
+  }
+
+  function populateBudgetSwitcher(){
     el.budgetSwitcher.innerHTML = '';
     const personalOpt = document.createElement('option');
     personalOpt.value = userData.personalBudgetId;
     personalOpt.textContent = 'Личный бюджет';
     el.budgetSwitcher.appendChild(personalOpt);
-
-    if (userData.sharedBudgets) {
-        userData.sharedBudgets.forEach((budgetId, i) => {
-            const sharedOpt = document.createElement('option');
-            sharedOpt.value = budgetId;
-            sharedOpt.textContent = `Общий бюджет ${i + 1}`;
-            el.budgetSwitcher.appendChild(sharedOpt);
-        });
-    }
-
+    (userData.sharedBudgets||[]).forEach((bid,i)=>{
+      const o=document.createElement('option'); o.value=bid; o.textContent=`Общий бюджет ${i+1}`; el.budgetSwitcher.appendChild(o);
+    });
     el.budgetSwitcher.value = activeBudgetId;
-}
+  }
 
-// ==== DATA SYNC ====
-async function save() {
-    if (!userId || !db || !activeBudgetId) return;
-    el.syncStatus.textContent = 'Сохранение...';
-    try {
-        const docRef = doc(db, `artifacts/${appId}/public/data/budgets/${activeBudgetId}`);
-        await setDoc(docRef, DB, { merge: true });
-        el.syncStatus.textContent = 'Синхронизировано';
-    } catch (error) {
-        console.error("Error saving data:", error);
-        el.syncStatus.textContent = 'Ошибка сохранения';
-    }
-}
-
-async function setupRealtimeListener() {
+  async function setupRealtimeListener(){
     if (unsubscribe) unsubscribe();
     if (!activeBudgetId) return;
-
     el.currentBudgetId.value = activeBudgetId;
-    
+
     const docRef = doc(db, `artifacts/${appId}/public/data/budgets/${activeBudgetId}`);
-    
-    unsubscribe = onSnapshot(docRef, (docSnap) => {
-        if (docSnap.exists()) {
-            const data = docSnap.data();
-            Object.keys(template).forEach(key => {
-                DB[key] = data[key] || structuredClone(template[key]);
-            });
-        } else {
-            DB = structuredClone(template);
-            preload(); 
-            save(); 
-        }
-        recalc();
-        el.syncStatus.textContent = 'Синхронизировано';
-    }, (error) => {
-        console.error("Realtime listener error:", error);
-        el.syncStatus.textContent = 'Ошибка подключения';
+    unsubscribe = onSnapshot(docRef, (snap)=>{
+      if (snap.exists()){
+        const data = snap.data();
+        Object.keys(template).forEach(k => DB[k] = data[k] ?? structuredClone(template[k]));
+      } else {
+        DB = structuredClone(template);
+        save(); // создать документ при первом запуске
+      }
+      recalc();
+      el.syncStatus.textContent = 'Синхронизировано';
+    }, (err)=>{
+      console.error(err);
+      el.syncStatus.textContent = 'Ошибка подключения';
     });
-}
-
-// ==== Utils, Autocat, Renderers (mostly unchanged) ====
-const fmt = n => (n===null||n===undefined||isNaN(n)) ? '—' : (+n).toLocaleString('ru-RU');
-const todayISO = () => new Date().toISOString().slice(0,10);
-const ym = d => {const t=new Date(d); return `${t.getFullYear()}-${String(t.getMonth()+1).padStart(2,'0')}`;}
-const sum = a => a.reduce((x,y)=>x+(+y||0),0);
-const groupBy = (a,fn)=>{const m=new Map(); for(const it of a){const k=fn(it); if(!m.has(k)) m.set(k,[]); m.get(k).push(it);} return m;};
-const uniq = a => Array.from(new Set(a));
-const PRESET=[ {cat:'Продукты', k:['пятерочка','перекресток','перекрёсток','лента','магнит','дикси','вкусвилл','ашан','окей','ярче','globus','lenta','perek','vkusvill'], mcc:[5411,5499]}, {cat:'Кафе/Доставка', k:['яндекс еда','delivery','самокат','лавка','yandex go','dodo','kfc','burger','шаверма','sushi'], mcc:[5812,5814]}, {cat:'Транспорт', k:['метро','мосгортранс','мцд','мцк','тройка','каршер','такси','uber','yandex taxi','citymobil'], mcc:[4111,4789]}, {cat:'Связь/Интернет', k:['мтс','билайн','мегафон','йота','tele2','ростелеком','rtk','интернет'], mcc:[4812,4814]}, {cat:'Жильё/Аренда', k:['аренда','найм','квартира'], mcc:[]}, {cat:'Коммуналка', k:['жкх','жку','мосэнергосбыт','водоканал'], mcc:[]}, {cat:'Здоровье', k:['аптека','rigla','stolichki','клиника','медцентр','анализ','мрт','кт','libre'], mcc:[5912,8011]}, {cat:'Реабилитация', k:['бассейн','лфк','реабил'], mcc:[]}, {cat:'Дети', k:['школа','сад','кружок'], mcc:[]}, {cat:'Подписки', k:['яндекс плюс','yandex plus','netflix','ivi','okko','spotify','apple','google','chatgpt','openai'], mcc:[]}, {cat:'Питомец', k:['зоомаг','zoo','четыре лапы'], mcc:[]}, {cat:'Переводы', k:['сбп','перевод','p2p','transfer'], mcc:[]}, {cat:'Снятие наличных', k:['atm','банкомат','cash'], mcc:[6011]}, {cat:'Прочее', k:[], mcc:[]}];
-function guessCategory(note, mcc, channel){ const s=(note||'').toLowerCase(); if(channel && /сбп|sbp/.test(channel.toLowerCase())) return 'Переводы'; if(channel && /atm|банкомат/.test(channel.toLowerCase())) return 'Снятие наличных'; for(const r of PRESET){ if(r.mcc.includes(+mcc)) return r.cat; if(r.k.some(k=>s.includes(k))) return r.cat; } return 'Прочее';}
-function recalc(){ const cur=ym(new Date()); const inMonth=DB.tx.filter(t=>ym(t.date)===cur); const inc=sum(inMonth.filter(t=>t.type==='income').map(t=>+t.amount||0)); const exp=sum(inMonth.filter(t=>t.type==='expense').map(t=>+t.amount||0)); const bal=inc-exp; el.kpiI.textContent=fmt(inc); el.kpiE.textContent=fmt(exp); el.kpiB.textContent=fmt(bal); el.planIncome.value=DB.plan.income||''; el.planExpense.value=DB.plan.expense||''; el.planSavings.value=DB.plan.savings||''; el.planWeeks.value=DB.plan.weeks||4; el.kpiMeta.textContent=`План: доход ${fmt(DB.plan.income)} · расход ${fmt(DB.plan.expense)} · сбережения ${fmt(DB.plan.savings)}`; renderRisks(inc,exp,bal); renderTx(); renderCharts(); renderAdvice(inc,exp,bal); refreshCatList();}
-function renderRisks(inc,exp,bal){ 
-    const notes=[]; 
-    if(inc<=0) notes.push({lvl:'crit',text:'В месяце нет доходов.'}); 
-    if(DB.plan.expense && exp>DB.plan.expense) notes.push({lvl:'warn',text:`Расходы выше плана на ${fmt(exp-DB.plan.expense)} ₽.`}); 
-    if(bal<0) notes.push({lvl:'crit',text:'Отрицательный баланс — урежьте переменные траты.'}); 
-    const cur=ym(new Date()); 
-    const exps=DB.tx.filter(t=>t.type==='expense' && ym(t.date)===cur); 
-    const total=sum(exps.map(t=>+t.amount||0))||1; 
-    const opaque=sum(exps.filter(t=>['Снятие наличных','Переводы','Переводы СБП'].includes(t.cat)).map(t=>+t.amount||0))/total; 
-    if(opaque>0.25) notes.push({lvl:'warn',text:`Наличные/переводы ${(opaque*100).toFixed(0)}% — цель <15%.`}); 
-    el.risk.innerHTML = notes.length? notes.map(n=>`<div class="${n.lvl==='crit'?'crit':'warn'}">• ${n.text}</div>`).join('<br/>') : '<span class="ok">Ок: следуйте плану.</span>';
-}
-function renderTx(){ const rows=[...DB.tx].sort((a,b)=> new Date(b.date)-new Date(a.date)); el.txTableBody.innerHTML = rows.map((t, idx)=>{ return `<tr data-idx="${idx}"> <td>${t.date||''}</td> <td><span class="${t.type==='income'?'ok':'warn'}">${t.type==='income'?'Доход':'Расход'}</span></td> <td>${t.cat||''}</td> <td style="text-align: right;">${fmt(t.amount)||''}</td> <td>${t.note||''}</td> <td style="text-align: center;"><button class="btn" data-action="del" style="padding: 4px 8px; font-size: 12px;" title="Удалить транзакцию">✕</button></td> </tr>`; }).join('');}
-function refreshCatList(){ const cats=uniq(DB.tx.map(t=>t.cat).filter(Boolean).concat(Object.keys(DB.cats))); el.catList.innerHTML = cats.sort().map(c=>`<option value="${c}"></option>`).join('');}
-let pieRef, barRef;
-function renderCharts(){ const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#848D97', font: { family: "'Inter', sans-serif" } } } }, scales: { x: { ticks: { color: '#848D97' }, grid: { color: '#30363D' } }, y: { ticks: { color: '#848D97' }, grid: { color: '#30363D' } } } }; const cur=ym(new Date()); const byCat=groupBy(DB.tx.filter(t=>t.type==='expense' && ym(t.date)===cur), t=>t.cat||'—'); const labels=Array.from(byCat.keys()); const vals=labels.map(k=> sum(byCat.get(k).map(t=>+t.amount||0))); if(pieRef) pieRef.destroy(); try{ pieRef=new Chart(el.pie,{type:'doughnut',data:{labels,datasets:[{data:vals, backgroundColor: ['#2F81F7', '#238636', '#DA3633', '#DBAB09', '#848D97', '#6e7681', '#58a6ff'], borderWidth: 0 }]},options: chartOptions}); }catch(e){ console.error("Pie Chart Error:", e) } const byMon=groupBy(DB.tx, t=>ym(t.date)); const months=Array.from(byMon.keys()).sort().slice(-12); const balances=months.map(m=>{const arr=byMon.get(m); const I=sum(arr.filter(t=>t.type==='income').map(t=>+t.amount||0)); const E=sum(arr.filter(t=>t.type==='expense').map(t=>+t.amount||0)); return I-E;}); if(barRef) barRef.destroy(); try{ barRef=new Chart(el.bar,{type:'bar',data:{labels:months,datasets:[{label:'Баланс',data:balances, backgroundColor: balances.map(b => b >= 0 ? 'rgba(35, 134, 54, 0.6)' : 'rgba(218, 54, 51, 0.6)'), borderColor: balances.map(b => b >= 0 ? '#238636' : '#DA3633'), borderWidth: 1 }]}, options: chartOptions}); }catch(e){ console.error("Bar Chart Error:", e) }}
-function renderAdvice(inc,exp,bal){ const adv=[]; if(bal<0) adv.push({t:`Баланс отрицательный (${fmt(bal)} ₽).`,d:`Сократите «Развлечения» и «Кафе/Доставка».`}); if(DB.plan.savings && bal<DB.plan.savings) adv.push({t:`Сбережения ниже цели.`,d:`Увеличьте доход и возьмите ланч из дома.`}); if (el.advice.querySelector('.gemini-advice')) return; el.advice.innerHTML = adv.length? adv.map(x=>`<p><b>${x.t}</b><br><span style="font-size: 12px; color: var(--text-secondary);">${x.d}</span></p>`).join('') : '<p style="color: var(--text-secondary);">Советы появятся после ввода. Нажмите на кнопку, чтобы получить персональные рекомендации от ИИ.</p>';}
-async function getGeminiAdvice() {
-  const PPLX_ENDPOINT = 'https://sweet-mountain-1ef8.epiwh7.workers.dev';
-
-  el.btnGeminiAdvice.disabled = true;
-  el.advice.innerHTML = '';
-  el.adviceLoader.style.display = 'block';
-
-  try {
-    const cur = ym(new Date());
-    const inMonth = DB.tx.filter(t => ym(t.date) === cur);
-    const income = inMonth.filter(t => t.type === 'income').reduce((a,t)=>a+(+t.amount||0),0);
-    const expense = inMonth.filter(t => t.type === 'expense').reduce((a,t)=>a+(+t.amount||0),0);
-
-    const byCat = new Map();
-    inMonth.filter(t=>t.type==='expense').forEach(t=>{
-      const k = t.cat || 'Прочее';
-      byCat.set(k, (byCat.get(k)||0) + (+t.amount||0));
-    });
-    const cats = Array.from(byCat.entries()).map(([k,v]) => `${k}: ${v.toLocaleString('ru-RU')} ₽`).join(', ') || 'Нет';
-
-    if (income === 0 && expense === 0) {
-      el.advice.innerHTML = '<p style="color: var(--text-secondary);">Недостаточно данных для анализа.</p>';
-      return;
-    }
-
-    const prompt = `Проанализируй мои финансы за текущий месяц и дай 3 коротких, конкретных совета на русском.
-Доход: ${income.toLocaleString('ru-RU')} ₽, Расходы: ${expense.toLocaleString('ru-RU')} ₽.
-По категориям: ${cats}. Форматируй как маркированный список, без воды.`;
-
-    const res = await fetch(PPLX_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-
-    const raw = await res.text();
-    let text = '';
-    try {
-      const data = JSON.parse(raw);
-      text = data.text || '';
-    } catch {
-      text = raw;
-    }
-
-    if (!res.ok) {
-      el.advice.innerHTML = `<p class="crit">Ошибка сервера (${res.status}).</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`;
-      return;
-    }
-
-    if (text.trim().startsWith('<')) {
-      el.advice.innerHTML = `<p class="crit">Ответ не JSON.</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`;
-      return;
-    }
-
-    el.advice.innerHTML = text
-      .split('\n')
-      .filter(Boolean)
-      .map(line => `<p style="margin-bottom:8px;">${line.replace(/^[-*]\s?/, '')}</p>`)
-      .join('') || '<p class="crit">Пустой ответ.</p>';
-
-  } catch (e) {
-    el.advice.innerHTML = `<p class="crit">Ошибка: ${e.message}</p>`;
-  } finally {
-    el.btnGeminiAdvice.disabled = false;
-    el.adviceLoader.style.display = 'none';
   }
-});
 
-</script>
-<!-- === SW перерегистрация (одноразовая) + Perplexity + видимые ошибки Auth === -->
-<script>
-// Одноразовая жёсткая перерегистрация SW (чтобы прибить старый кэш)
-(function(){
-  if (!('serviceWorker' in navigator)) return;
-  const FLAG = 'sw_migrated_v3';
-  if (sessionStorage.getItem(FLAG)) return;
-  sessionStorage.setItem(FLAG, '1');
-  navigator.serviceWorker.getRegistrations().then(regs => regs.forEach(r => r.unregister()))
-  .finally(() => {
-    const ver = 'v3';
-    navigator.serviceWorker.register('./sw.js?v='+ver).catch(console.error);
-    setTimeout(()=>location.reload(), 1200); // один раз «жёстко» обновим
-  });
-})();
-</script>
-
-<script>
-// ===== Perplexity советник (подключён к твоему воркеру) =====
-const PPLX_ENDPOINT = 'https://sweet-mountain-1ef8.epiwh7.workers.dev';
-
-async function getGeminiAdvice(){ // оставляем твое имя обработчика
-  const adviceBox = document.getElementById('advice');
-  const adviceLoader = document.getElementById('advice-loader');
-  const btn = document.getElementById('btn-gemini-advice');
-
-  if (btn) btn.disabled = true;
-  if (adviceBox) adviceBox.innerHTML = '';
-  if (adviceLoader) adviceLoader.style.display = 'block';
-
-  try {
-    // Собираем краткую сводку за текущий месяц из твоей DB
-    const curYM = new Date().toISOString().slice(0,7);
-    const tx = (window.DB?.tx || []).filter(t => {
-      try { return new Date(t.date).toISOString().slice(0,7) === curYM; } catch {_=>false; return false;}
-    });
-    const income = tx.filter(t=>t.type==='income').reduce((a,t)=>a+(+t.amount||0),0);
-    const expense = tx.filter(t=>t.type==='expense').reduce((a,t)=>a+(+t.amount||0),0);
-
-    const byCat = new Map();
-    tx.filter(t=>t.type==='expense').forEach(t=>{
-      const k = t.cat || 'Прочее';
-      byCat.set(k, (byCat.get(k)||0) + (+t.amount||0));
-    });
-    const cats = Array.from(byCat.entries()).map(([k,v])=>`${k}: ${v.toLocaleString('ru-RU')} ₽`).join(', ') || 'Нет';
-
-    if (income===0 && expense===0) {
-      if (adviceBox) adviceBox.innerHTML = '<p style="color:#8B949E">Недостаточно данных за текущий месяц.</p>';
-      return;
+  async function save(){
+    if (!userId || !activeBudgetId) return;
+    el.syncStatus.textContent = 'Сохранение…';
+    try{
+      const docRef = doc(db, `artifacts/${appId}/public/data/budgets/${activeBudgetId}`);
+      await setDoc(docRef, DB, {merge:true});
+      el.syncStatus.textContent = 'Синхронизировано';
+    }catch(e){
+      console.error(e);
+      el.syncStatus.textContent = 'Ошибка сохранения';
     }
+  }
 
-    const prompt = `Проанализируй мои финансы за текущий месяц и дай 3 коротких конкретных совета на русском.
+  // --- Interactions ---
+  el.budgetSwitcher?.addEventListener('change', async (e)=>{
+    activeBudgetId = e.target.value;
+    await setupRealtimeListener();
+  });
+
+  el.btnCopyId?.addEventListener('click', async ()=>{
+    try{ await navigator.clipboard.writeText(el.currentBudgetId.value); el.syncStatus.textContent='ID скопирован'; }
+    catch{ el.syncStatus.textContent='Не удалось скопировать'; }
+  });
+
+  el.btnJoinBudget?.addEventListener('click', async ()=>{
+    const id = el.joinBudgetId.value.trim();
+    if (!id) return;
+    userData.sharedBudgets = Array.from(new Set([...(userData.sharedBudgets||[]), id]));
+    await setDoc(doc(db, `artifacts/${appId}/users/${userId}`), userData, {merge:true});
+    populateBudgetSwitcher();
+    el.joinBudgetId.value='';
+  });
+
+  el.btnSavePlan?.addEventListener('click', async ()=>{
+    DB.plan.income = +el.planIncome.value||0;
+    DB.plan.expense = +el.planExpense.value||0;
+    DB.plan.savings = +el.planSavings.value||0;
+    DB.plan.weeks  = +el.planWeeks.value||4;
+    await save(); recalc();
+  });
+
+  el.btnAutocat?.addEventListener('click', ()=>{
+    const PRESET=[{cat:'Продукты',k:['пятерочка','перекресток','лента','магнит','вкусвилл','ашан','окей','lenta','vkusvill','perek']},
+                  {cat:'Кафе/Доставка',k:['яндекс еда','delivery','самокат','лавка','kfc','burger','dodo','sushi']},
+                  {cat:'Транспорт',k:['метро','мцд','мцк','каршер','такси','uber','yandex taxi','citymobil']},
+                  {cat:'Связь/Интернет',k:['мтс','билайн','мегафон','йота','tele2','ростелеком','rtk']},
+                  {cat:'Здоровье',k:['аптека','rigla','stolichki','клиника','анализ']},
+                  {cat:'Подписки',k:['яндекс плюс','netflix','ivi','okko','spotify','apple','google']},
+                  {cat:'Переводы',k:['сбп','перевод','p2p']},
+                  {cat:'Снятие наличных',k:['atm','банкомат']},
+                  {cat:'Прочее',k:[]}
+    ];
+    const guess = note=>{
+      const s=(note||'').toLowerCase();
+      for(const r of PRESET) if(r.k.some(k=>s.includes(k))) return r.cat;
+      return 'Прочее';
+    };
+    DB.tx.forEach(t=>{ if(!t.cat) t.cat = guess(t.note); });
+    save(); recalc();
+  });
+
+  el.btnAdd?.addEventListener('click', async ()=>{
+    const d = el.txDate.value; const type = el.txType.value||'expense';
+    const cat = (el.txCat.value||'Прочее').trim();
+    const amt = +el.txAmt.value||0; const note = (el.txNote.value||'').trim();
+    if (!d){ alert('Выберите дату'); return; }
+    if (!amt || amt<=0){ alert('Сумма должна быть > 0'); return; }
+    const tx = { id: crypto.randomUUID?.()||String(Date.now()), date:d, type, cat, amount:amt, note };
+    DB.tx.unshift(tx);
+    await save(); recalc();
+    el.txCat.value=''; el.txAmt.value=''; el.txNote.value='';
+  });
+
+  // init date
+  if (el.txDate && !el.txDate.value) el.txDate.value = todayISO();
+
+</script>
+
+<!-- Perplexity helper (через твой воркер) -->
+<script>
+  const PPLX_ENDPOINT = 'https://sweet-mountain-1ef8.epiwh7.workers.dev';
+  async function getGeminiAdvice(){
+    const btn = document.getElementById('btn-gemini-advice');
+    const box = document.getElementById('advice');
+    const loader = document.getElementById('advice-loader');
+    btn.disabled = true; box.innerHTML = ''; loader.style.display='block';
+    try{
+      const cur = new Date().toISOString().slice(0,7);
+      const tx = (window.DB?.tx || []);
+      const inMonth = tx.filter(t=>{ try{ return new Date(t.date).toISOString().slice(0,7)===cur; }catch{return false;}});
+      const income = inMonth.filter(t=>t.type==='income').reduce((a,t)=>a+(+t.amount||0),0);
+      const expense = inMonth.filter(t=>t.type==='expense').reduce((a,t)=>a+(+t.amount||0),0);
+      const byCat = new Map();
+      inMonth.filter(t=>t.type==='expense').forEach(t=>{
+        const k=t.cat||'Прочее'; byCat.set(k,(byCat.get(k)||0)+(+t.amount||0));
+      });
+      const cats = Array.from(byCat.entries()).map(([k,v])=>`${k}: ${v.toLocaleString('ru-RU')} ₽`).join(', ') || 'Нет';
+      if (income===0 && expense===0){ box.innerHTML='<p style="color:#8B949E">Недостаточно данных за текущий месяц.</p>'; return; }
+
+      const prompt = `Проанализируй мои финансы за текущий месяц и дай 3 коротких, конкретных совета на русском.
 Доход: ${income.toLocaleString('ru-RU')} ₽, Расходы: ${expense.toLocaleString('ru-RU')} ₽. По категориям: ${cats}.
 Форматируй как маркированный список, без воды.`;
 
-    const res = await fetch(PPLX_ENDPOINT, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ prompt })
-    });
+      const res = await fetch(PPLX_ENDPOINT, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({prompt}) });
+      const raw = await res.text();
+      let text=''; try{ const data=JSON.parse(raw); text=data.text||''; } catch{ text=raw; }
 
-    const raw = await res.text();
-    let text = '';
-    try { const data = JSON.parse(raw); text = data.text || ''; }
-    catch { text = raw; }
+      if (!res.ok){ box.innerHTML = `<p class="crit">Ошибка сервера (${res.status}).</p><pre style="white-space:pre-wrap">${(text||'').slice(0,800)}</pre>`; return; }
+      if (String(text).trim().startsWith('<')){ box.innerHTML = `<p class="crit">Ответ не JSON (возможно HTML-ошибка воркера).</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`; return; }
 
-    if (!res.ok) {
-      if (adviceBox) adviceBox.innerHTML = `<p class="crit">Ошибка сервера (${res.status}).</p><pre style="white-space:pre-wrap">${(text||'').slice(0,800)}</pre>`;
-      return;
+      box.innerHTML = text.split('\n').filter(Boolean).map(line=>`<p style="margin-bottom:8px;">${line.replace(/^[-*]\s?/, '')}</p>`).join('') || '<p class="crit">Пустой ответ.</p>';
+    }catch(e){
+      box.innerHTML = `<p class="crit">Ошибка: ${e.message}</p>`;
+    }finally{
+      btn.disabled = false; loader.style.display='none';
     }
-    if (String(text).trim().startsWith('<')) {
-      if (adviceBox) adviceBox.innerHTML = `<p class="crit">Ответ не JSON (возможно HTML-ошибка воркера).</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`;
-      return;
-    }
-
-    if (adviceBox) adviceBox.innerHTML = text.split('\n').filter(Boolean)
-      .map(line=>`<p style="margin-bottom:8px;">${line.replace(/^[-*]\s?/, '')}</p>`).join('')
-      || '<p class="crit">Пустой ответ.</p>';
-
-  } catch(e) {
-    if (adviceBox) adviceBox.innerHTML = `<p class="crit">Ошибка: ${e.message}</p>`;
-  } finally {
-    if (btn) btn.disabled = false;
-    if (adviceLoader) adviceLoader.style.display = 'none';
   }
-}
-
-// На всякий — переназначим обработчик кнопки
-document.getElementById('btn-gemini-advice')?.addEventListener('click', getGeminiAdvice);
+  document.getElementById('btn-gemini-advice')?.addEventListener('click', getGeminiAdvice);
 </script>
 
-<script type="module">
-// ===== Видимые ошибки Firebase Auth прямо под полями =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-
-const errBox = document.getElementById('auth-error');
-const $ = id => document.getElementById(id);
-const mapErr = (c,m)=>({
-  'auth/invalid-credential':'Неверный email или пароль.',
-  'auth/user-not-found':'Пользователь не найден.',
-  'auth/wrong-password':'Неверный пароль.',
-  'auth/too-many-requests':'Слишком много попыток. Подождите немного.',
-  'auth/network-request-failed':'Проблема с сетью или CORS.',
-  'auth/invalid-email':'Некорректный email.',
-  'auth/operation-not-allowed':'Метод входа отключён в Firebase.',
-  'auth/email-already-in-use':'Email уже зарегистрирован.',
-  'auth/weak-password':'Слабый пароль (мин. 6 символов).'
-}[c] || m || 'Неизвестная ошибка.');
-
-try {
-  // НЕ меняю твой firebaseConfig — он у тебя уже задан выше в файле
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-
-  $('btn-login')?.addEventListener('click', async () => {
-    errBox.textContent = '';
-    try { await signInWithEmailAndPassword(auth, $('auth-email').value.trim(), $('auth-password').value.trim()); }
-    catch (e) { errBox.textContent = mapErr(e.code, e.message); }
-  });
-
-  $('btn-register')?.addEventListener('click', async () => {
-    errBox.textContent = '';
-    try { await createUserWithEmailAndPassword(auth, $('auth-email').value.trim(), $('auth-password').value.trim()); }
-    catch (e) { errBox.textContent = mapErr(e.code, e.message); }
-  });
-
-  onAuthStateChanged(auth, (user) => {
-    const overlay = document.getElementById('auth-overlay');
-    const appEl = document.querySelector('.app');
-    if (user) { overlay.style.display='none'; appEl.style.display='block'; }
-    else { overlay.style.display='flex'; appEl.style.display='none'; }
-  });
-} catch(e) {
-  if (errBox) errBox.textContent = 'Ошибка инициализации Firebase: ' + e.message;
-}
-</script>
-<!-- === конец готового блока === -->
 </body>
 </html>
