@@ -9,8 +9,6 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <meta name="theme-color" content="#0D1117"/>
   <link rel="apple-touch-icon" href="./icons/icon-192.png">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <!-- Fonts & Charts -->
   <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,71 +25,66 @@
     *{box-sizing:border-box}
     html,body{height:100%;margin:0}
     body{font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased}
-    .app{max-width:1280px;margin:0 auto;padding:20px;display:none}
+    .app{max-width:1200px;margin:0 auto;padding:20px;display:none}
 
-    /* Карточки, заголовок */
-    .card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;box-shadow:var(--shadow)}
-    .grid{display:grid;gap:20px}
+    /* Карточки, сетки, хедер */
+    .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 18px 20px;box-shadow:var(--shadow)}
+    .grid{display:grid;gap:18px}
     .g2{grid-template-columns:repeat(auto-fit,minmax(360px,1fr))}
     .g3{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
-
-    .header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-bottom:14px;border-bottom:1px solid var(--border);margin-bottom:16px}
-    .header h1{margin:0;font-size:28px;font-weight:800}
+    .header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--border);margin-bottom:16px}
+    .header h1{margin:0;font-size:clamp(22px,3.2vw,30px);font-weight:800}
     .header p{margin:4px 0 0;color:var(--muted);font-size:14px}
     .header-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 
     /* Формы */
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
-    input,select{width:100%;background:var(--input);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:8px;font-size:14px}
+    input,select{width:100%;background:var(--input);border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:16px}
     input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(47,129,247,.25)}
     .row{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end}
 
-    .btn{background:#21262D;border:1px solid var(--border);color:var(--text);padding:10px 14px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer}
+    /* Кнопки */
+    .btn{background:#21262D;border:1px solid var(--border);color:var(--text);padding:12px 14px;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer}
     .btn:hover{background:#2a3037}
     .btn-prim{background:var(--green);border:1px solid var(--green);color:#fff}
-    .btn-ghost{background:transparent;border:1px dashed var(--border)}
 
-    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px}
+    /* KPI/таблица/графики */
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
     .kpi-item{background:#0f1520;border:1px solid var(--border);border-radius:10px;padding:12px}
     .kpi-item .label{font-size:12px;color:var(--muted)}
     .kpi-item .value{font-size:22px;font-weight:800}
-
     .table-container{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:10px}
-    table{width:100%;border-collapse:collapse;font-size:14px}
+    table{width:100%;border-collapse:collapse;font-size:15px}
     th,td{padding:10px 12px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
     th{color:var(--muted);font-weight:700}
-
-    .chart-container{position:relative;height:320px;width:100%}
+    .chart-container{position:relative;height:340px;width:100%}
     .chart-container canvas{display:block !important;width:100% !important;height:100% !important}
 
     /* Оверлеи */
     #auth-overlay{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px}
-    .auth-container{width:100%;max-width:420px}
+    .auth-container{width:100%;max-width:460px}
     .auth-title{margin:0 0 6px;font-size:26px;font-weight:800}
     .auth-sub{color:var(--muted);margin:0 0 16px}
     #auth-error{min-height:18px;color:var(--red);font-size:14px}
-
     #loading-overlay{position:fixed;inset:0;background:rgba(13,17,23,.94);display:none;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:10px;backdrop-filter:blur(4px)}
     .loader{border:4px solid var(--border);border-top:4px solid var(--blue);border-radius:50%;width:44px;height:44px;animation:spin 1s linear infinite}
     @keyframes spin{to{transform:rotate(360deg)}}
-
     .ok{color:#56d364}.warn{color:var(--yellow)}.crit{color:var(--red)}
     .notice{padding:12px;border:1px solid var(--border);border-radius:10px;background:#0b1320}
 
-    /* Мобильный аккуратный адаптив */
+    /* Мобильный адаптив */
     @media (max-width:480px){
-      .app{padding:16px}
+      .app{padding:14px}
       .grid.g2,.grid.g3{grid-template-columns:1fr}
       .header-actions{width:100%}
       .header-actions .btn{width:100%}
-      input,select,.btn{font-size:16px}
-      th:nth-child(5),td:nth-child(5){display:none} /* длинный комментарий скрываем */
+      th:nth-child(5),td:nth-child(5){display:none} /* скрываем длинный комментарий */
     }
   </style>
 </head>
 <body>
 
-<!-- Firebase config (из твоего проекта) -->
+<!-- Firebase config -->
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyC6Xpy-5uBAb09twfptyqtPsYtGb6nTLcU",
@@ -109,16 +102,10 @@
 <div id="auth-overlay">
   <div class="auth-container card">
     <h1 class="auth-title">Вход в FiFo</h1>
-    <p class="auth-sub">Введите почту и пароль. Можно зарегистрироваться за минуту.</p>
+    <p class="auth-sub">Email и пароль (можно быстро зарегистрироваться).</p>
     <div class="grid g2">
-      <div>
-        <label for="auth-email">Email</label>
-        <input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email">
-      </div>
-      <div>
-        <label for="auth-password">Пароль</label>
-        <input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password">
-      </div>
+      <div><label for="auth-email">Email</label><input type="email" id="auth-email" placeholder="you@example.com" autocomplete="email"></div>
+      <div><label for="auth-password">Пароль</label><input type="password" id="auth-password" placeholder="••••••••" autocomplete="current-password"></div>
     </div>
     <div id="auth-error"></div>
     <div class="row" style="margin-top:12px">
@@ -128,7 +115,7 @@
   </div>
 </div>
 
-<!-- Глобальный лоадер -->
+<!-- Лоадер -->
 <div id="loading-overlay">
   <div class="loader"></div>
   <div style="color:var(--muted)">Синхронизация данных…</div>
@@ -150,7 +137,7 @@
     </div>
   </header>
 
-  <main class="grid" style="gap:20px">
+  <main class="grid" style="gap:18px">
     <div class="card">
       <div class="title" style="font-weight:800;margin-bottom:8px">Семейный режим</div>
       <p class="notice" id="sync-status" style="margin:0 0 10px;color:var(--muted)">Синхронизация…</p>
@@ -228,7 +215,7 @@
 
     <div class="card" style="grid-column:1/-1">
       <div class="title" style="font-weight:800;margin-bottom:8px">Рекомендации помощника</div>
-      <div id="advice" class="notice">Нажмите кнопку ниже, чтобы получить персональные советы.</div>
+      <div id="advice" class="notice">Добавьте пару транзакций и нажмите кнопку — советы появятся здесь.</div>
       <div id="advice-loader" style="display:none;margin-top:10px;text-align:center">
         <div class="loader" style="margin:0 auto"></div>
         <div style="color:var(--muted);margin-top:6px">Анализируем ваши финансы…</div>
@@ -238,10 +225,10 @@
   </main>
 </div>
 
-<!-- Регистрация SW (используй sw.js из моего прошлого сообщения) -->
+<!-- Регистрация SW -->
 <script>
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js?v=4').catch(console.error);
+    navigator.serviceWorker.register('./sw.js?v=5').catch(console.error);
   }
 </script>
 
@@ -253,7 +240,7 @@
 
   // ---------- State ----------
   const template = { plan:{income:0,expense:0,savings:0,weeks:4}, tx:[], debts:[], goals:[], cats:{}, recur:[] };
-  let DB = structuredClone(template);
+  window.DB = structuredClone(template); // делаю доступным для Perplexity блока
   let db, auth, userId, unsubscribe, activeBudgetId;
   let userData = { personalBudgetId:null, sharedBudgets:[] };
 
@@ -283,8 +270,8 @@
 
   // ---------- Local fallbacks ----------
   const storeKey = uid => `fifo-db-${uid||'guest'}`;
-  const saveLocal = () => { try{ localStorage.setItem(storeKey(userId), JSON.stringify(DB)); }catch{} };
-  const loadLocal = () => { try{ const s=localStorage.getItem(storeKey(userId)); if(s) DB=Object.assign(structuredClone(template), JSON.parse(s)); }catch{} };
+  const saveLocal = () => { try{ localStorage.setItem(storeKey(userId), JSON.stringify(window.DB)); }catch{} };
+  const loadLocal = () => { try{ const s=localStorage.getItem(storeKey(userId)); if(s) window.DB=Object.assign(structuredClone(template), JSON.parse(s)); }catch{} };
 
   // ---------- Charts ----------
   let pieRef, barRef;
@@ -302,14 +289,14 @@
   function renderCharts(){
     ensureCharts();
     const cur = ym(new Date());
-    const monthExpenses = DB.tx.filter(t=>t.type==='expense' && ym(t.date)===cur);
+    const monthExpenses = window.DB.tx.filter(t=>t.type==='expense' && ym(t.date)===cur);
     const byCat = {};
     for(const t of monthExpenses) byCat[t.cat||'Прочее'] = (byCat[t.cat||'Прочее']||0)+(+t.amount||0);
     const labels = Object.keys(byCat); const vals = labels.map(k=>byCat[k]);
     if (pieRef){ pieRef.data.labels = labels; pieRef.data.datasets[0].data = vals; pieRef.update(); }
 
     const byMon = {};
-    for(const t of DB.tx){ const m=ym(t.date); byMon[m]=byMon[m]||{i:0,e:0}; if(t.type==='income') byMon[m].i+=(+t.amount||0); else byMon[m].e+=(+t.amount||0); }
+    for(const t of window.DB.tx){ const m=ym(t.date); byMon[m]=byMon[m]||{i:0,e:0}; if(t.type==='income') byMon[m].i+=(+t.amount||0); else byMon[m].e+=(+t.amount||0); }
     const months = Object.keys(byMon).sort().slice(-12);
     const balances = months.map(m=> byMon[m].i - byMon[m].e );
     if (barRef){ barRef.data.labels = months; barRef.data.datasets[0].data = balances; barRef.update(); }
@@ -317,11 +304,11 @@
 
   // ---------- Renderers ----------
   function refreshCatList(){
-    const set = new Set((DB.tx||[]).map(t=>t.cat).filter(Boolean).concat(Object.keys(DB.cats||{})));
+    const set = new Set((window.DB.tx||[]).map(t=>t.cat).filter(Boolean).concat(Object.keys(window.DB.cats||{})));
     el.catList.innerHTML = Array.from(set).sort().map(c=>`<option value="${c}"></option>`).join('');
   }
   function renderTx(){
-    const rows = [...(DB.tx||[])].sort((a,b)=> new Date(b.date)-new Date(a.date));
+    const rows = [...(window.DB.tx||[])].sort((a,b)=> new Date(b.date)-new Date(a.date));
     el.txTableBody.innerHTML = rows.map(t=>`
       <tr>
         <td>${t.date||''}</td>
@@ -329,20 +316,20 @@
         <td>${t.cat||''}</td>
         <td style="text-align:right">${fmt(t.amount)}</td>
         <td>${(t.note||'').replace(/</g,'&lt;')}</td>
-        <td style="text-align:center"><button class="btn btn-ghost" data-id="${t.id||''}" data-action="del" style="padding:4px 8px;font-size:12px">✕</button></td>
+        <td style="text-align:center"><button class="btn" data-id="${t.id||''}" data-action="del" style="padding:4px 8px;font-size:12px">✕</button></td>
       </tr>
     `).join('');
   }
   function renderSummary(){
     const cur = ym(new Date());
-    const inMonth = DB.tx.filter(t=>ym(t.date)===cur);
+    const inMonth = window.DB.tx.filter(t=>ym(t.date)===cur);
     const inc = sum(inMonth.filter(t=>t.type==='income').map(t=>+t.amount||0));
     const exp = sum(inMonth.filter(t=>t.type==='expense').map(t=>+t.amount||0));
     const bal = inc-exp;
     el.kpiI.textContent = fmt(inc);
     el.kpiE.textContent = fmt(exp);
     el.kpiB.textContent = fmt(bal);
-    el.kpiMeta.textContent = `План: доход ${fmt(DB.plan.income)} · расход ${fmt(DB.plan.expense)} · сбережения ${fmt(DB.plan.savings)}`;
+    el.kpiMeta.textContent = `План: доход ${fmt(window.DB.plan.income)} · расход ${fmt(window.DB.plan.expense)} · сбережения ${fmt(window.DB.plan.savings)}`;
   }
   function render(){
     if (el.txDate && !el.txDate.value) el.txDate.value = todayISO();
@@ -399,7 +386,6 @@
   });
 
   async function bootstrapUser(){
-    // 1) профиль пользователя
     const uref = doc(db, `artifacts/${appId}/users/${userId}`);
     const usnap = await getDoc(uref);
     if (usnap.exists()){
@@ -410,13 +396,11 @@
     }
     activeBudgetId = userData.personalBudgetId;
 
-    // 2) выпадающий список бюджетов
     el.budgetSwitcher.innerHTML='';
     const opt1 = document.createElement('option'); opt1.value=userData.personalBudgetId; opt1.textContent='Личный бюджет'; el.budgetSwitcher.appendChild(opt1);
     (userData.sharedBudgets||[]).forEach((bid,i)=>{ const o=document.createElement('option'); o.value=bid; o.textContent=`Общий бюджет ${i+1}`; el.budgetSwitcher.appendChild(o); });
     el.budgetSwitcher.value = activeBudgetId;
 
-    // 3) realtime на бюджет
     await bindBudgetRealtime();
   }
 
@@ -424,24 +408,23 @@
     if (unsubscribe) unsubscribe();
     el.currentBudgetId.value = activeBudgetId||'';
     el.syncStatus.textContent='Синхронизация…';
-
     try{
       const bref = doc(db, `artifacts/${appId}/public/data/budgets/${activeBudgetId}`);
       unsubscribe = onSnapshot(bref, (snap)=>{
         if (snap.exists()){
           const data = snap.data() || {};
-          DB = structuredClone(template);
-          for (const k of Object.keys(template)) DB[k] = data[k] ?? structuredClone(template[k]);
+          window.DB = structuredClone(template);
+          for (const k of Object.keys(template)) window.DB[k] = data[k] ?? structuredClone(template[k]);
           saveLocal();
         } else {
-          DB = structuredClone(template);
-          setDoc(bref, DB, {merge:true}).catch(()=>{});
+          window.DB = structuredClone(template);
+          setDoc(bref, window.DB, {merge:true}).catch(()=>{});
           saveLocal();
         }
         el.syncStatus.textContent='Синхронизировано';
         render();
       }, (err)=>{
-        console.warn('Firestore offline, fallback to localStorage:', err);
+        console.warn('Firestore offline:', err);
         loadLocal();
         el.syncStatus.textContent='Оффлайн (локальные данные)';
         render();
@@ -455,13 +438,13 @@
   }
 
   async function save(){
-    saveLocal(); // всегда сохраняем локально
+    saveLocal();
     try{
       const bref = doc(db, `artifacts/${appId}/public/data/budgets/${activeBudgetId}`);
-      await setDoc(bref, DB, {merge:true});
+      await setDoc(bref, window.DB, {merge:true});
       el.syncStatus.textContent='Синхронизировано';
     }catch(e){
-      console.warn('Save to Firestore failed, kept local:', e);
+      console.warn('Save failed:', e);
       el.syncStatus.textContent='Оффлайн (сохранено локально)';
     }
   }
@@ -492,24 +475,22 @@
   });
 
   el.btnSavePlan?.addEventListener('click', async ()=>{
-    DB.plan.income = +el.planIncome.value||0;
-    DB.plan.expense = +el.planExpense.value||0;
-    DB.plan.savings = +el.planSavings.value||0;
-    DB.plan.weeks = +el.planWeeks.value||4;
+    window.DB.plan.income = +el.planIncome.value||0;
+    window.DB.plan.expense = +el.planExpense.value||0;
+    window.DB.plan.savings = +el.planSavings.value||0;
+    window.DB.plan.weeks = +el.planWeeks.value||4;
     await save(); render();
   });
 
-  // удаление транзакции по клику на ✕
   document.addEventListener('click', async (ev)=>{
     const btn = ev.target.closest('button[data-action="del"]');
     if (!btn) return;
     const id = btn.getAttribute('data-id');
     if (!id) return;
-    DB.tx = (DB.tx||[]).filter(t=>t.id!==id);
+    window.DB.tx = (window.DB.tx||[]).filter(t=>t.id!==id);
     await save(); render();
   });
 
-  // добавление транзакции
   const defaultDate = todayISO(); if (el.txDate && !el.txDate.value) el.txDate.value = defaultDate;
   el.btnAdd?.addEventListener('click', async ()=>{
     const d = el.txDate.value; const type = el.txType.value||'expense';
@@ -517,12 +498,11 @@
     if (!d) return alert('Выберите дату');
     if (!amt || amt<=0) return alert('Сумма должна быть больше 0');
     const tx = { id: crypto.randomUUID?.()||String(Date.now()), date:d, type, cat, amount:amt, note };
-    DB.tx.unshift(tx);
+    window.DB.tx.unshift(tx);
     await save(); render();
     el.txCat.value=''; el.txAmt.value=''; el.txNote.value='';
   });
 
-  // автокатегоризация
   el.btnAutocat?.addEventListener('click', ()=>{
     const PRESET=[
       {cat:'Продукты',k:['пятер','перекрест','лента','магнит','вкусвилл','ашан','окей','lenta','vkus','perek']},
@@ -540,27 +520,23 @@
       for(const r of PRESET) if(r.k.some(k=>s.includes(k))) return r.cat;
       return 'Прочее';
     };
-    (DB.tx||[]).forEach(t=>{ if(!t.cat) t.cat = pick(t.note); });
+    (window.DB.tx||[]).forEach(t=>{ if(!t.cat) t.cat = pick(t.note); });
     save(); render();
   });
 
-  // ---------- Perplexity ----------
+  // ---------- Perplexity через твой Worker ----------
+  const PPLX_ENDPOINT = 'https://sweet-mountain-1ef8.epiwh7.workers.dev'; // твой Cloudflare Worker
+
   window.getGeminiAdvice = async function(){
-    const endpoint = 'https://sweet-mountain-1ef8.epiwh7.workers.dev';
     const btn = el.btnAdvice, box = el.advice, loader = el.adviceLoader;
     btn.disabled = true; box.innerHTML=''; loader.style.display='block';
     try{
-      // Берём текущий месяц, либо последние 60 дней — чтобы не было "мало данных"
       const now = new Date();
       const curMonth = ym(now);
       const last60 = new Date(now.getTime()-60*864e5);
 
-      const tx = (DB.tx||[]);
+      const tx = (window.DB.tx||[]);
       let scope = tx.filter(t=>{ const d=new Date(t.date); return ym(d)===curMonth || d>=last60; });
-      if (scope.length===0 && (DB.plan.income||DB.plan.expense||DB.plan.savings)){
-        // нет транзакций — отправим хотя бы план
-        scope = [];
-      }
       const income = sum(scope.filter(t=>t.type==='income').map(t=>+t.amount||0));
       const expense = sum(scope.filter(t=>t.type==='expense').map(t=>+t.amount||0));
       const byCat = {};
@@ -571,16 +547,23 @@
 
       const prompt = `Проанализируй мои финансы и дай 3 конкретных совета на русском.
 Если транзакций мало — всё равно дай рекомендации, опираясь на цели.
-Доход: ${income.toLocaleString('ru-RU')} ₽, Расходы: ${expense.toLocaleString('ru-RU')} ₽, По категориям: ${cats}.
-Цели: доход ${fmt(DB.plan.income)}, расход ${fmt(DB.plan.expense)}, сбережения ${fmt(DB.plan.savings)}.
+Доход: ${fmt(income)}, Расходы: ${fmt(expense)}, Категории: ${cats}.
+Цели: доход ${fmt(window.DB.plan.income)}, расход ${fmt(window.DB.plan.expense)}, сбережения ${fmt(window.DB.plan.savings)}.
 Коротко, списком, без воды.`;
 
-      const res = await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
-      const raw = await res.text();
-      let text=''; try{ const j=JSON.parse(raw); text=j.text||''; } catch{ text=raw; }
+      const res = await fetch(PPLX_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt})});
+      const textRaw = await res.text();
+      let text = '';
+      try{ const j=JSON.parse(textRaw); text = j.text || ''; } catch{ text = textRaw; }
 
-      if (!res.ok){ box.innerHTML = `<p class="crit">Ошибка сервера (${res.status}).</p><pre style="white-space:pre-wrap">${(text||'').slice(0,800)}</pre>`; return; }
-      if (String(text).trim().startsWith('<')){ box.innerHTML = `<p class="crit">Ответ не JSON (возможно HTML-страница воркера).</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`; return; }
+      if (!res.ok){
+        box.innerHTML = `<p class="crit">Ошибка сервера (${res.status}).</p><pre style="white-space:pre-wrap">${(text||'').slice(0,800)}</pre>`;
+        return;
+      }
+      if (String(text).trim().startsWith('<')){
+        box.innerHTML = `<p class="crit">Ответ не JSON (скорее всего HTML-страница ошибки Worker).</p><pre style="white-space:pre-wrap">${text.slice(0,800)}</pre>`;
+        return;
+      }
 
       box.innerHTML = text.split('\n').filter(Boolean).map(l=>`<p style="margin:.3rem 0">${l.replace(/^[-*]\s?/, '')}</p>`).join('') || '<p class="crit">Пустой ответ.</p>';
     }catch(e){
@@ -588,7 +571,7 @@
     }finally{
       btn.disabled=false; loader.style.display='none';
     }
-  }
+  };
   el.btnAdvice?.addEventListener('click', window.getGeminiAdvice);
 </script>
 
